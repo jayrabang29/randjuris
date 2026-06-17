@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RandJuris — Project Proposal</title>
+  <style>
+    :root {
+      --navy: #0f2744;
+      --navy-light: #1a3a5c;
+      --gold: #c9a227;
+      --gold-light: #e8d48b;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, #2d4a6f 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 6rem;
+      page-break-after: always;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      margin-bottom: 2rem;
+      width: fit-content;
+    }
+
+    .cover h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+      max-width: 700px;
+      margin-bottom: 1rem;
+    }
+
+    .cover .subtitle {
+      font-size: 1.25rem;
+      color: var(--gold-light);
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    .cover-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: auto;
+      padding-top: 3rem;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .cover-meta dt {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 0.25rem;
+    }
+
+    .cover-meta dd {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .toc {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 3rem;
+      page-break-after: always;
+    }
+
+    .toc h2 {
+      font-size: 1.1rem;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .toc ol {
+      padding-left: 1.25rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+
+    .toc li {
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .toc a {
+      color: var(--navy-light);
+      text-decoration: none;
+    }
+
+    .toc a:hover { text-decoration: underline; }
+
+    section {
+      margin-bottom: 2.5rem;
+      page-break-inside: avoid;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: var(--navy-light);
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    p { margin-bottom: 0.85rem; }
+
+    ul, ol {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    .highlight-box {
+      background: linear-gradient(to right, #fef9e7, #fff);
+      border-left: 4px solid var(--gold);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.25rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: var(--navy);
+      color: #fff;
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 0.6rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td { background: var(--bg); }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .module-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: #fff;
+    }
+
+    .module-card h4 {
+      color: var(--navy);
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .module-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .tech-tag {
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .phase-timeline {
+      position: relative;
+      padding-left: 2rem;
+      margin: 1rem 0;
+    }
+
+    .phase-timeline::before {
+      content: "";
+      position: absolute;
+      left: 0.45rem;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 2px;
+      background: var(--gold);
+    }
+
+    .phase-item {
+      position: relative;
+      margin-bottom: 1.25rem;
+      padding-left: 1rem;
+    }
+
+    .phase-item::before {
+      content: "";
+      position: absolute;
+      left: -1.6rem;
+      top: 0.45rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid var(--navy);
+    }
+
+    .phase-item strong { color: var(--navy); }
+
+    .pricing-table td:last-child,
+    .pricing-table th:last-child { text-align: right; }
+
+    .footer-note {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .signature-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .sig-line {
+      border-top: 1px solid var(--text);
+      padding-top: 0.5rem;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+    }
+
+    @media print {
+      body { font-size: 11pt; }
+      .cover { min-height: auto; padding: 3rem; }
+      .module-grid { grid-template-columns: 1fr 1fr; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover">
+    <div class="cover-badge">Confidential — Project Proposal</div>
+    <h1>RandJuris</h1>
+    <p class="subtitle">
+      A modern, secure, and integrated platform to streamline legal practice operations — from client intake to case closure, billing, and compliance.
+    </p>
+    <dl class="cover-meta">
+      <div>
+        <dt>Prepared By</dt>
+        <dd>RANDTEK IT Solution</dd>
+      </div>
+      <div>
+        <dt>Document Version</dt>
+        <dd>1.0</dd>
+      </div>
+      <div>
+        <dt>Date</dt>
+        <dd>June 2025</dd>
+      </div>
+      <div>
+        <dt>Prepared For</dt>
+        <dd>Law Firm Stakeholders</dd>
+      </div>
+      <div>
+        <dt>Project Code</dt>
+        <dd>randjuris</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>Phase 1 Delivered</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="content">
+
+    <!-- TABLE OF CONTENTS -->
+    <nav class="toc">
+      <h2>Table of Contents</h2>
+      <ol>
+        <li><a href="#executive-summary">Executive Summary</a></li>
+        <li><a href="#background">Background &amp; Problem Statement</a></li>
+        <li><a href="#solution">Proposed Solution</a></li>
+        <li><a href="#features">Core Features &amp; Modules</a></li>
+        <li><a href="#roles">User Roles &amp; Access Control</a></li>
+        <li><a href="#security">Security &amp; Compliance</a></li>
+        <li><a href="#technology">Technology Architecture</a></li>
+        <li><a href="#ui">User Interface &amp; Experience</a></li>
+        <li><a href="#deliverables">Deliverables &amp; Current Status</a></li>
+        <li><a href="#roadmap">Implementation Roadmap</a></li>
+        <li><a href="#investment">Investment Overview</a></li>
+        <li><a href="#support">Support &amp; Maintenance</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#acceptance">Acceptance &amp; Sign-Off</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. EXECUTIVE SUMMARY -->
+    <section id="executive-summary">
+      <h2>1. Executive Summary</h2>
+      <p>
+        RANDTEK IT Solution proposes <strong>RandJuris</strong> — a comprehensive web-based platform designed specifically for law firms operating in the Philippines and similar jurisdictions. The system centralizes client management, case tracking, document storage, task coordination, calendar scheduling, billing in Philippine Peso (₱), and audit logging into a single secure environment.
+      </p>
+      <div class="highlight-box">
+        <strong>Key Value Proposition:</strong> Replace fragmented spreadsheets, email threads, and paper-based workflows with a unified digital platform that improves productivity, reduces errors, strengthens client service, and provides full visibility into firm operations — all while enforcing role-based security appropriate for legal practice.
+      </div>
+      <p>
+        Phase 1 of the platform has been developed and is operational, delivering ten core modules with enterprise-grade authentication, seven distinct user roles, and a modern responsive interface. This proposal outlines the system's capabilities, technical foundation, delivery status, and recommended path forward for deployment and ongoing enhancement.
+      </p>
+    </section>
+
+    <!-- 2. BACKGROUND -->
+    <section id="background">
+      <h2>2. Background &amp; Problem Statement</h2>
+      <h3>Industry Challenges</h3>
+      <p>Law firms face recurring operational challenges that impact profitability and client satisfaction:</p>
+      <ul>
+        <li><strong>Disconnected data</strong> — Client records, case files, billing, and schedules stored across multiple tools with no single source of truth.</li>
+        <li><strong>Manual billing inefficiency</strong> — Time tracking and invoice generation done manually, leading to revenue leakage and delayed collections.</li>
+        <li><strong>Document management risk</strong> — Critical legal documents scattered in email attachments or local drives without version control or access logs.</li>
+        <li><strong>Poor team coordination</strong> — Tasks, deadlines, and court appearances not visible to all relevant staff in real time.</li>
+        <li><strong>Compliance gaps</strong> — Limited audit trails make it difficult to demonstrate who accessed or modified sensitive records.</li>
+        <li><strong>Scalability limits</strong> — As the firm grows, informal processes break down and onboarding new staff becomes costly.</li>
+      </ul>
+      <h3>Business Need</h3>
+      <p>
+        The firm requires a purpose-built management system that addresses these pain points while remaining affordable to deploy, intuitive for non-technical staff, and secure enough to handle privileged client information.
+      </p>
+    </section>
+
+    <!-- 3. SOLUTION -->
+    <section id="solution">
+      <h2>3. Proposed Solution</h2>
+      <p>
+        The RandJuris is a full-stack web application that provides a centralized portal for all firm stakeholders — partners, lawyers, paralegals, secretaries, accountants, and optionally clients — to perform their daily work within clearly defined permission boundaries.
+      </p>
+      <h3>Solution Highlights</h3>
+      <ul>
+        <li>Cloud-ready web application accessible from any modern browser</li>
+        <li>Role-based access control (RBAC) with seven predefined user roles</li>
+        <li>End-to-end case lifecycle management from intake to closure</li>
+        <li>Integrated time tracking and invoicing in Philippine Peso (₱)</li>
+        <li>Secure document upload, preview, and download per case</li>
+        <li>Shared calendar for hearings, meetings, and deadlines</li>
+        <li>Real-time in-app notifications and comprehensive activity audit logs</li>
+        <li>Server-side pagination across all data listings for performance at scale</li>
+        <li>Modern, professional UI designed for legal professionals</li>
+      </ul>
+    </section>
+
+    <!-- 4. FEATURES -->
+    <section id="features">
+      <h2>4. Core Features &amp; Modules</h2>
+      <div class="module-grid">
+        <div class="module-card">
+          <h4>📊 Dashboard</h4>
+          <p>Executive overview with KPIs (active clients, cases, hearings, outstanding invoices, tasks due today), charts for case status distribution, revenue trends, and task priorities. Recent activity feed included.</p>
+        </div>
+        <div class="module-card">
+          <h4>👥 Client Management</h4>
+          <p>Full client directory supporting individual and corporate clients. Search, filter, create, edit, and profile views with linked cases. Archive support for inactive clients.</p>
+        </div>
+        <div class="module-card">
+          <h4>⚖️ Case Management</h4>
+          <p>Case creation with categories (Civil, Criminal, Corporate, Family, Real Estate, IP, Labor, Tax, etc.), status tracking, lawyer assignments, court details, notes, timeline, and linked documents/tasks.</p>
+        </div>
+        <div class="module-card">
+          <h4>📁 Document Management</h4>
+          <p>Upload, categorize, preview, and download case documents. Categories include pleadings, evidence, correspondence, contracts, court orders, and research materials.</p>
+        </div>
+        <div class="module-card">
+          <h4>✅ Task Management</h4>
+          <p>Task creation with priorities (Low to Critical), due dates, assignees, and case linkage. List view with pagination and Kanban board view for visual workflow management.</p>
+        </div>
+        <div class="module-card">
+          <h4>📅 Calendar &amp; Events</h4>
+          <p>Schedule hearings, meetings, court appearances, deadlines, and reminders. Day, week, and month views with case association and date-range filtering.</p>
+        </div>
+        <div class="module-card">
+          <h4>💰 Billing &amp; Invoicing</h4>
+          <p>Time entry logging per case and lawyer, automated amount calculation, invoice generation in ₱ (PHP), status workflow (Draft → Sent → Paid → Overdue), and payment recording.</p>
+        </div>
+        <div class="module-card">
+          <h4>🔔 Notifications</h4>
+          <p>In-app notification bell with unread indicators, mark-as-read, and read-all functionality. Keeps staff informed of case updates and system events.</p>
+        </div>
+        <div class="module-card">
+          <h4>📋 Activity Logs</h4>
+          <p>Full audit trail of system actions — who did what, on which entity, with timestamps. Essential for compliance and internal accountability.</p>
+        </div>
+        <div class="module-card">
+          <h4>🔐 Authentication</h4>
+          <p>Secure login, forgot password, and reset password flows. Session management with NextAuth. Demo admin account available for evaluation.</p>
+        </div>
+      </div>
+
+      <h3>Data Listing &amp; Pagination</h3>
+      <p>All major listing pages include server-side pagination with configurable page sizes (10, 20, 50, 100 records), ensuring fast performance even as data volumes grow.</p>
+    </section>
+
+    <!-- 5. ROLES -->
+    <section id="roles">
+      <h2>5. User Roles &amp; Access Control</h2>
+      <p>The system implements granular Role-Based Access Control (RBAC) with seven predefined roles:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Description</th>
+            <th>Key Permissions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Super Admin</strong></td>
+            <td>System administrator</td>
+            <td>Full access to all modules and settings</td>
+          </tr>
+          <tr>
+            <td><strong>Managing Partner</strong></td>
+            <td>Firm leadership</td>
+            <td>All operational modules; user read access; activity logs</td>
+          </tr>
+          <tr>
+            <td><strong>Lawyer</strong></td>
+            <td>Attorney / counsel</td>
+            <td>Clients, cases, documents, tasks, calendar, billing (create/read)</td>
+          </tr>
+          <tr>
+            <td><strong>Paralegal</strong></td>
+            <td>Legal support staff</td>
+            <td>Cases (read/update), documents, tasks, calendar</td>
+          </tr>
+          <tr>
+            <td><strong>Secretary</strong></td>
+            <td>Administrative staff</td>
+            <td>Clients, cases (read), calendar, tasks (create/read)</td>
+          </tr>
+          <tr>
+            <td><strong>Accountant</strong></td>
+            <td>Finance / billing</td>
+            <td>Billing full access; clients and cases (read only)</td>
+          </tr>
+          <tr>
+            <td><strong>Client</strong></td>
+            <td>External client portal</td>
+            <td>Limited read access to own cases, documents, and invoices</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. SECURITY -->
+    <section id="security">
+      <h2>6. Security &amp; Compliance</h2>
+      <ul>
+        <li><strong>Password Security</strong> — Bcrypt hashing for all stored credentials; password complexity enforced on reset.</li>
+        <li><strong>Session Management</strong> — Secure server-side sessions via NextAuth v5 with middleware-enforced route protection.</li>
+        <li><strong>Permission Middleware</strong> — Every server action validates user permissions before data access or mutation.</li>
+        <li><strong>Activity Auditing</strong> — All significant actions logged with user, entity, action type, and timestamp.</li>
+        <li><strong>Input Validation</strong> — Zod schema validation on all forms and API inputs to prevent injection and data corruption.</li>
+        <li><strong>Document Access Control</strong> — Documents served through authenticated API routes with permission checks.</li>
+        <li><strong>Data Isolation</strong> — Role-based data visibility ensures staff only access information appropriate to their function.</li>
+      </ul>
+    </section>
+
+    <!-- 7. TECHNOLOGY -->
+    <section id="technology">
+      <h2>7. Technology Architecture</h2>
+      <p>The platform is built on a modern, maintainable, and scalable technology stack:</p>
+      <div class="tech-stack">
+        <span class="tech-tag">Next.js 15</span>
+        <span class="tech-tag">React 19</span>
+        <span class="tech-tag">TypeScript</span>
+        <span class="tech-tag">MySQL</span>
+        <span class="tech-tag">Prisma ORM</span>
+        <span class="tech-tag">NextAuth v5</span>
+        <span class="tech-tag">Tailwind CSS</span>
+        <span class="tech-tag">shadcn/ui</span>
+        <span class="tech-tag">TanStack Table</span>
+        <span class="tech-tag">React Hook Form</span>
+        <span class="tech-tag">Zod</span>
+        <span class="tech-tag">Recharts</span>
+        <span class="tech-tag">Zustand</span>
+      </div>
+
+      <h3>Architecture Overview</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Frontend</td>
+            <td>Next.js App Router, React 19</td>
+            <td>Server &amp; client components, responsive UI</td>
+          </tr>
+          <tr>
+            <td>Styling</td>
+            <td>Tailwind CSS, shadcn/ui</td>
+            <td>Consistent, accessible component library</td>
+          </tr>
+          <tr>
+            <td>Backend</td>
+            <td>Next.js Server Actions, API Routes</td>
+            <td>Business logic, file serving, notifications</td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td>MySQL + Prisma ORM</td>
+            <td>Relational data with migrations and seeding</td>
+          </tr>
+          <tr>
+            <td>Authentication</td>
+            <td>NextAuth v5, bcryptjs</td>
+            <td>Secure login, sessions, password reset</td>
+          </tr>
+          <tr>
+            <td>Validation</td>
+            <td>Zod</td>
+            <td>Runtime type-safe input validation</td>
+          </tr>
+          <tr>
+            <td>Deployment</td>
+            <td>Node.js 18+ (Vercel / VPS ready)</td>
+            <td>Production build with static optimization</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8. UI -->
+    <section id="ui">
+      <h2>8. User Interface &amp; Experience</h2>
+      <p>The interface is designed for legal professionals who need clarity and efficiency, not technical complexity:</p>
+      <ul>
+        <li><strong>Professional Theme</strong> — Navy and gold color palette conveying trust and authority.</li>
+        <li><strong>Plus Jakarta Sans</strong> — Modern, highly legible typography throughout.</li>
+        <li><strong>Responsive Layout</strong> — Collapsible sidebar navigation; works on desktop and tablet.</li>
+        <li><strong>Split Login Screen</strong> — Branded content panel alongside the sign-in form on desktop.</li>
+        <li><strong>Data Tables</strong> — Sortable, searchable tables with server-side pagination on all listings.</li>
+        <li><strong>Status Badges</strong> — Color-coded visual indicators for case, task, and invoice statuses.</li>
+        <li><strong>Dashboard Charts</strong> — Visual analytics for cases by status, monthly revenue, and task priorities.</li>
+        <li><strong>Philippine Peso (₱)</strong> — All monetary values formatted for the Philippine market.</li>
+      </ul>
+    </section>
+
+    <!-- 9. DELIVERABLES -->
+    <section id="deliverables">
+      <h2>9. Deliverables &amp; Current Status</h2>
+      <p>Phase 1 development is <strong>complete and delivered</strong>. The following items are included:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Deliverable</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Project scaffolding &amp; configuration</td><td>✅ Complete</td><td>Next.js 15, TypeScript, ESLint, Tailwind</td></tr>
+          <tr><td>Database schema &amp; migrations</td><td>✅ Complete</td><td>MySQL via Prisma; seed script included</td></tr>
+          <tr><td>Authentication &amp; RBAC</td><td>✅ Complete</td><td>7 roles, middleware, permission checks</td></tr>
+          <tr><td>Dashboard module</td><td>✅ Complete</td><td>Stats, charts, recent activities</td></tr>
+          <tr><td>Client management</td><td>✅ Complete</td><td>CRUD, search, filters, profile page</td></tr>
+          <tr><td>Case management</td><td>✅ Complete</td><td>CRUD, assignments, notes, timeline</td></tr>
+          <tr><td>Document management</td><td>✅ Complete</td><td>Upload, preview, download, delete</td></tr>
+          <tr><td>Task management</td><td>✅ Complete</td><td>List + Kanban board views</td></tr>
+          <tr><td>Calendar module</td><td>✅ Complete</td><td>Day/week/month views, event CRUD</td></tr>
+          <tr><td>Billing module</td><td>✅ Complete</td><td>Time entries, invoices, payments (₱)</td></tr>
+          <tr><td>Notifications</td><td>✅ Complete</td><td>In-app notification system</td></tr>
+          <tr><td>Activity logs</td><td>✅ Complete</td><td>Full audit trail with pagination</td></tr>
+          <tr><td>Server-side pagination</td><td>✅ Complete</td><td>All listing pages</td></tr>
+          <tr><td>Demo data &amp; admin account</td><td>✅ Complete</td><td>admin@randtek.com / Password123!</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 10. ROADMAP -->
+    <section id="roadmap">
+      <h2>10. Implementation Roadmap</h2>
+      <div class="phase-timeline">
+        <div class="phase-item">
+          <strong>Phase 1 — Core Platform (Delivered)</strong><br />
+          Authentication, RBAC, all ten core modules, UI, database, seed data, pagination, and demo environment.
+        </div>
+        <div class="phase-item">
+          <strong>Phase 2 — Production Deployment</strong><br />
+          Cloud hosting setup (Vercel/VPS), production MySQL, SSL, domain configuration, environment hardening, backup strategy, and staff onboarding training.
+        </div>
+        <div class="phase-item">
+          <strong>Phase 3 — Enhanced Features</strong><br />
+          User management UI, email notifications, PDF invoice export, advanced reporting, client portal expansion, mobile optimization, and document e-signing integration.
+        </div>
+        <div class="phase-item">
+          <strong>Phase 4 — Integrations &amp; Scale</strong><br />
+          Payment gateway (GCash, PayMaya, bank transfer), SMS reminders, Microsoft/Google Calendar sync, and multi-branch firm support.
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. INVESTMENT -->
+    <section id="investment">
+      <h2>11. Investment Overview</h2>
+      <p>The following investment is based on prevailing Philippine market rates for custom enterprise web applications with comparable scope — multi-module architecture, role-based security, document management, billing, and audit compliance. Pricing may be adjusted for firms requiring additional integrations, multi-branch deployment, or extended training.</p>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Amount (₱)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Phase 1 — Development</td>
+            <td>Full platform as delivered (10 modules, RBAC, UI)</td>
+            <td>1,250,000.00</td>
+          </tr>
+          <tr>
+            <td>Phase 2 — Deployment</td>
+            <td>Production setup, SSL, domain, training (1 session)</td>
+            <td>125,000.00</td>
+          </tr>
+          <tr>
+            <td>Annual Maintenance</td>
+            <td>Updates, bug fixes, security patches, support</td>
+            <td>187,500.00 / year</td>
+          </tr>
+          <tr>
+            <td>Phase 3 Enhancements</td>
+            <td>Email alerts, PDF invoices, user mgmt, reporting (bundled)</td>
+            <td>350,000.00 – 750,000.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Phase 1 — Development Payment Schedule</h3>
+      <p>Total Phase 1 investment of <strong>₱1,250,000.00</strong> is payable in four (4) terms as follows:</p>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Milestone</th>
+            <th>%</th>
+            <th>Amount (₱)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1st Payment</td>
+            <td>Upon contract signing and project kickoff</td>
+            <td>15%</td>
+            <td>187,500.00</td>
+          </tr>
+          <tr>
+            <td>2nd Payment</td>
+            <td>Upon delivery of core modules (Auth, Clients, Cases, Dashboard)</td>
+            <td>15%</td>
+            <td>187,500.00</td>
+          </tr>
+          <tr>
+            <td>3rd Payment</td>
+            <td>Upon delivery of remaining modules (Documents, Tasks, Calendar, Billing)</td>
+            <td>30%</td>
+            <td>375,000.00</td>
+          </tr>
+          <tr>
+            <td>4th Payment</td>
+            <td>Upon Phase 1 final acceptance and handover</td>
+            <td>40%</td>
+            <td>500,000.00</td>
+          </tr>
+          <tr>
+            <td colspan="3"><strong>Total Phase 1</strong></td>
+            <td><strong>1,250,000.00</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><em>Market reference: Custom practice-management platforms in the Philippines typically range from ₱900,000 to ₱2,000,000 for mid-tier systems with document management, billing, and multi-role access. Off-the-shelf SaaS alternatives (e.g. Clio, LEAP) cost approximately ₱2,000–₱7,000 per user per month — a custom build offers long-term ownership and no per-seat licensing fees.</em></p>
+      <p><em>Phase 2 is invoiced in full (₱125,000.00) upon production deployment. Annual maintenance (₱187,500.00) is billed annually in advance.</em></p>
+    </section>
+
+    <!-- 12. SUPPORT -->
+    <section id="support">
+      <h2>12. Support &amp; Maintenance</h2>
+      <p>RANDTEK IT Solution provides ongoing support to ensure the platform remains secure, performant, and aligned with the firm's evolving needs:</p>
+      <ul>
+        <li><strong>Bug Fixes</strong> — Priority resolution for defects affecting core workflows.</li>
+        <li><strong>Security Updates</strong> — Dependency and framework patches applied promptly.</li>
+        <li><strong>Database Backups</strong> — Automated daily backups with 30-day retention (production).</li>
+        <li><strong>Technical Support</strong> — Email and ticket-based support during business hours.</li>
+        <li><strong>Enhancement Requests</strong> — New features scoped and quoted separately under Phase 3+.</li>
+        <li><strong>Documentation</strong> — Database schema documentation and deployment guides provided.</li>
+      </ul>
+    </section>
+
+    <!-- 13. CONCLUSION -->
+    <section id="conclusion">
+      <h2>13. Conclusion</h2>
+      <p>
+        The RandJuris represents a significant step forward in digitizing legal practice operations. With Phase 1 fully delivered, the firm has a production-ready foundation that addresses the most critical operational needs — client and case management, document control, team coordination, billing, and compliance auditing.
+      </p>
+      <p>
+        RANDTEK IT Solution is prepared to proceed with production deployment, staff training, and the phased enhancement roadmap outlined in this proposal. We are confident this platform will deliver measurable improvements in efficiency, accountability, and client service quality.
+      </p>
+      <div class="highlight-box">
+        We welcome the opportunity to discuss this proposal, arrange a live demonstration, and finalize terms for deployment and ongoing partnership.
+      </div>
+    </section>
+
+    <!-- 14. ACCEPTANCE -->
+    <section id="acceptance">
+      <h2>14. Acceptance &amp; Sign-Off</h2>
+      <p>By signing below, both parties acknowledge review of this proposal and agreement to proceed under the terms described herein.</p>
+      <div class="signature-block">
+        <div>
+          <p><strong>For RANDTEK IT Solution</strong></p>
+          <div class="sig-line">Authorized Signature &amp; Date</div>
+          <p style="margin-top:0.5rem;font-size:0.85rem;">Name: ___________________________<br />Title: Project Lead</p>
+        </div>
+        <div>
+          <p><strong>For the Client / Law Firm</strong></p>
+          <div class="sig-line">Authorized Signature &amp; Date</div>
+          <p style="margin-top:0.5rem;font-size:0.85rem;">Name: ___________________________<br />Title: ___________________________</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      <strong>RANDTEK IT Solution</strong> &nbsp;|&nbsp; RandJuris &nbsp;|&nbsp; Proposal v1.0 &nbsp;|&nbsp; June 2025<br />
+      This document is confidential and intended solely for the named recipient. Unauthorized distribution is prohibited.
+    </div>
+
+  </div>
+</body>
+</html>

@@ -40,13 +40,20 @@ export function normalizeCallbackUrl(url: string): string {
 }
 
 export function getBaseUrl(): string {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
   const raw =
     process.env.AUTH_URL ||
     process.env.NEXTAUTH_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
 
-  return raw.replace(/\/index\.php\/?$/i, "").replace(/\/index\.php\//gi, "/").replace(/\/+$/, "");
+  return raw
+    .replace(/\/index\.php\/?$/i, "")
+    .replace(/\/index\.php\//gi, "/")
+    .replace(/\/+$/, "");
 }
 
 export function buildAppUrl(path: string): string {

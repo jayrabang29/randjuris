@@ -169,7 +169,7 @@ async function main() {
     ],
   });
 
-  const categories = await Promise.all([
+  await Promise.all([
     prisma.category.create({
       data: { name: "Pleading", code: "PLEADING" },
     }),
@@ -200,14 +200,14 @@ async function main() {
   ];
   const actions = ["create", "read", "update", "delete", "manage"];
 
-  for (const module of modules) {
+  for (const moduleName of modules) {
     for (const action of actions) {
       await prisma.permission.create({
         data: {
-          name: `${module}:${action}`,
-          module,
+          name: `${moduleName}:${action}`,
+          module: moduleName,
           action,
-          description: `${action} ${module}`,
+          description: `${action} ${moduleName}`,
         },
       });
     }

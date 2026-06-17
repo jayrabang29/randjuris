@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
 import { getPermissionsForRole } from "@/lib/permission-store";
 import { getStaticPermissionsForRole } from "@/lib/permissions";
+import { authConfig } from "@/lib/auth.config";
 
 declare module "next-auth" {
   interface Session {
@@ -42,13 +43,8 @@ declare module "@auth/core/jwt" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as never,
-  trustHost: true,
-  session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
   providers: [
     Credentials({
       name: "credentials",
@@ -98,6 +94,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id!;
@@ -118,20 +115,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.role = token.role as UserRole;
-        session.user.firstName = token.firstName as string;
-        session.user.lastName = token.lastName as string;
-        session.user.name = `${token.firstName} ${token.lastName}`;
-        session.user.permissions =
-          (token.permissions as string[] | undefined) ??
-          getStaticPermissionsForRole(token.role as UserRole);
-      }
-      return session;
     },
   },
 });

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth.edge";
 import { canAccessRoute } from "@/lib/permissions";
 import { normalizePathname } from "@/lib/url";
 import { NextResponse } from "next/server";

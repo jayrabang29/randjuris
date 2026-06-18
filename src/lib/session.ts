@@ -1,4 +1,4 @@
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import {
   getStaticPermissionsForRole,
   hasPermission,
@@ -12,43 +12,61 @@ export async function getCurrentUser() {
   return session?.user ?? null;
 }
 
-async function resolveSessionUser(sessionUser: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>) {
-  const dbUser = await prisma.user.findUnique({
-    where: { email: sessionUser.email },
-    select: {
-      id: true,
-      isActive: true,
-      role: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
-
-  if (!dbUser || !dbUser.isActive) {
-    await signOut({ redirectTo: "/login" });
-    redirect("/login");
-  }
-
-  const permissions = getStaticPermissionsForRole(dbUser.role);
-
+function buildUserFromSession(
+  sessionUser: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+) {
   return {
     ...sessionUser,
-    id: dbUser.id,
-    role: dbUser.role,
-    firstName: dbUser.firstName,
-    lastName: dbUser.lastName,
-    name: `${dbUser.firstName} ${dbUser.lastName}`,
-    permissions,
+    permissions: getStaticPermissionsForRole(sessionUser.role),
   };
+}
+
+async function resolveSessionUser(
+  sessionUser: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+) {
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: sessionUser.email },
+      select: {
+        id: true,
+        isActive: true,
+        role: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
+    if (!dbUser || !dbUser.isActive) {
+      return null;
+    }
+
+    return {
+      ...sessionUser,
+      id: dbUser.id,
+      role: dbUser.role,
+      firstName: dbUser.firstName,
+      lastName: dbUser.lastName,
+      name: `${dbUser.firstName} ${dbUser.lastName}`,
+      permissions: getStaticPermissionsForRole(dbUser.role),
+    };
+  } catch {
+    // Trust the JWT session when the database is slow or temporarily unavailable.
+    return buildUserFromSession(sessionUser);
+  }
 }
 
 export async function requireAuth() {
   const user = await getCurrentUser();
-  if (!user) {
+  if (!user?.email || !user?.role) {
     redirect("/login");
   }
 
-  return resolveSessionUser(user);
+  const resolved = await resolveSessionUser(user);
+  if (!resolved) {
+    redirect("/login?error=session");
+  }
+
+  return resolved;
 }
 
 export async function requirePermission(permission: string) {

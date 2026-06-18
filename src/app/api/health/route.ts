@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getAuthSecret } from "@/lib/auth-secret";
 import { getDatabaseUrl } from "@/lib/database-url";
@@ -20,6 +21,9 @@ export async function GET() {
     }
   }
 
+  const session = await auth();
+  const hasSession = Boolean(session?.user?.email && session?.user?.role);
+
   return NextResponse.json({
     ok: hasAuthSecret && databaseOk,
     environment: process.env.VERCEL_ENV ?? "local",
@@ -27,5 +31,12 @@ export async function GET() {
     hasDatabaseUrl,
     databaseOk,
     databaseError,
+    hasSession,
+    sessionUser: hasSession
+      ? {
+          email: session?.user?.email,
+          role: session?.user?.role,
+        }
+      : null,
   });
 }

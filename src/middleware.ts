@@ -61,7 +61,7 @@ export default auth((req) => {
 
     if (!canAccessRoute(session.user.role, pathname, permissions)) {
       return NextResponse.redirect(
-        new URL("/login?error=unauthorized", nextUrl)
+        new URL("/dashboard?error=unauthorized", nextUrl)
       );
     }
   }

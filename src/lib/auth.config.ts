@@ -2,6 +2,10 @@ import type { NextAuthConfig } from "next-auth";
 import { UserRole } from "@prisma/client";
 import { getStaticPermissionsForRole } from "@/lib/permissions";
 
+const useSecureCookies =
+  process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const authConfig = {
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   trustHost: true,
@@ -9,6 +13,17 @@ export const authConfig = {
   pages: {
     signIn: "/login",
     error: "/login",
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
   },
   providers: [],
   callbacks: {
@@ -19,29 +34,21 @@ export const authConfig = {
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
-        token.permissions = getStaticPermissionsForRole(user.role);
-      } else if (
-        (!Array.isArray(token.permissions) || token.permissions.length === 0) &&
-        token.role
-      ) {
-        token.permissions = getStaticPermissionsForRole(
-          token.role as UserRole
-        );
       }
 
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token?.role) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.role = token.role as UserRole;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.name = `${token.firstName} ${token.lastName}`;
-        session.user.permissions =
-          (token.permissions as string[] | undefined) ??
-          getStaticPermissionsForRole(token.role as UserRole);
+        session.user.permissions = getStaticPermissionsForRole(
+          token.role as UserRole
+        );
       }
 
       return session;

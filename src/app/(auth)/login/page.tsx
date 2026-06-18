@@ -37,6 +37,10 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(
     urlError === "unauthorized"
       ? "You do not have access to that page."
+      : urlError === "CredentialsSignin"
+        ? "Invalid email or password."
+        : urlError === "session"
+          ? "Your session is no longer valid. Please sign in again."
       : urlError
         ? "Your session expired. Please sign in again."
         : null
@@ -56,29 +60,11 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         email: data.email,
         password: data.password,
-        redirect: false,
+        callbackUrl,
       });
-
-      if (result?.error) {
-        setIsLoading(false);
-        setError(
-          result.error === "CredentialsSignin"
-            ? "Invalid email or password"
-            : "Login failed. Please try again."
-        );
-        return;
-      }
-
-      if (result?.ok) {
-        window.location.assign(callbackUrl);
-        return;
-      }
-
-      setIsLoading(false);
-      setError("Login failed. Please try again.");
     } catch {
       setIsLoading(false);
       setError("Login failed. Please try again.");

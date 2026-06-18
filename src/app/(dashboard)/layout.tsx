@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
-import { getPermissionsForRole } from "@/lib/permission-store";
+import { getStaticPermissionsForRole } from "@/lib/permissions";
 import { requireAuth } from "@/lib/session";
 
 export default async function DashboardLayout({
@@ -9,7 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAuth();
-  const permissions = await getPermissionsForRole(user.role);
+  const permissions = getStaticPermissionsForRole(user.role);
 
   return (
     <PermissionsProvider role={user.role} permissions={permissions}>

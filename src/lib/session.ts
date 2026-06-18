@@ -1,6 +1,8 @@
 import { auth, signOut } from "@/lib/auth";
-import { hasPermission } from "@/lib/permissions";
-import { getPermissionsForRole } from "@/lib/permission-store";
+import {
+  getStaticPermissionsForRole,
+  hasPermission,
+} from "@/lib/permissions";
 import prisma from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -27,7 +29,7 @@ async function resolveSessionUser(sessionUser: NonNullable<Awaited<ReturnType<ty
     redirect("/login");
   }
 
-  const permissions = await getPermissionsForRole(dbUser.role);
+  const permissions = getStaticPermissionsForRole(dbUser.role);
 
   return {
     ...sessionUser,

@@ -5,7 +5,6 @@ import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
-import { getPermissionsForRole } from "@/lib/permission-store";
 import { getStaticPermissionsForRole } from "@/lib/permissions";
 import { authConfig } from "@/lib/auth.config";
 
@@ -75,13 +74,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        await logActivity({
-          userId: user.id,
-          action: "USER_LOGIN",
-          entity: "User",
-          entityId: user.id,
-          details: `User ${user.email} logged in`,
-        });
+        try {
+          await logActivity({
+            userId: user.id,
+            action: "USER_LOGIN",
+            entity: "User",
+            entityId: user.id,
+            details: `User ${user.email} logged in`,
+          });
+        } catch {
+          // Do not block login if activity logging fails (e.g. DB latency on Vercel).
+        }
 
         return {
           id: user.id,
@@ -103,12 +106,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
-
-        try {
-          token.permissions = await getPermissionsForRole(user.role);
-        } catch {
-          token.permissions = getStaticPermissionsForRole(user.role);
-        }
+        // Use static permissions during sign-in to avoid slow DB seeding on login.
+        token.permissions = getStaticPermissionsForRole(user.role);
       } else if (
         (!Array.isArray(token.permissions) || token.permissions.length === 0) &&
         token.role

@@ -2,7 +2,8 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail } from "lucide-react";
@@ -29,7 +30,6 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = normalizeCallbackUrl(
     searchParams.get("callbackUrl") || "/dashboard"
@@ -56,17 +56,31 @@ function LoginForm() {
     setError(null);
     setIsLoading(true);
 
-    try {
-      const result = await login(data);
+    const loginTimeoutMs = 30_000;
 
-      if (result.success) {
-        router.push(callbackUrl);
-        router.refresh();
-      } else {
-        setIsLoading(false);
-        setError(result.error ?? "Login failed");
+    try {
+      const result = await Promise.race([
+        login(data, callbackUrl),
+        new Promise<{ success: false; error: string }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                success: false,
+                error:
+                  "Login timed out. The server may be unable to reach the database.",
+              }),
+            loginTimeoutMs
+          )
+        ),
+      ]);
+
+      setIsLoading(false);
+      setError(result.error ?? "Login failed");
+    } catch (error) {
+      if (isRedirectError(error)) {
+        throw error;
       }
-    } catch {
+
       setIsLoading(false);
       setError("Login failed");
     }

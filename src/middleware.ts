@@ -1,29 +1,43 @@
-import { auth } from "@/lib/auth.edge";
-import { canAccessRoute } from "@/lib/permissions";
+import { getToken } from "next-auth/jwt";
+import { UserRole } from "@prisma/client";
+import { canAccessRoute, getStaticPermissionsForRole } from "@/lib/permissions";
 import { normalizePathname } from "@/lib/url";
 import { NextResponse } from "next/server";
-import type { Session } from "next-auth";
+import type { NextRequest } from "next/server";
 
-// Keep env vars in the middleware bundle (required on Vercel Edge).
+// Bundle secrets for Vercel Edge.
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 void authSecret;
 
 const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 const authRoutes = ["/login", "/forgot-password", "/reset-password"];
 
-function hasUsableSession(session: Session | null): boolean {
-  return Boolean(session?.user?.email && session?.user?.role);
+type AuthToken = {
+  email?: string;
+  role?: UserRole;
+};
+
+function resolveSecureCookie(req: NextRequest): boolean {
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  const protocol = forwardedProto ?? req.nextUrl.protocol.replace(":", "");
+  return protocol === "https";
 }
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const session = req.auth;
-  const isLoggedIn = hasUsableSession(session);
-  const rawPathname = nextUrl.pathname;
+export async function middleware(req: NextRequest) {
+  const secureCookie = resolveSecureCookie(req);
+
+  const token = (await getToken({
+    req,
+    secret: authSecret,
+    secureCookie,
+  })) as AuthToken | null;
+
+  const isLoggedIn = Boolean(token?.email && token?.role);
+  const rawPathname = req.nextUrl.pathname;
   const pathname = normalizePathname(rawPathname);
 
   if (rawPathname !== pathname) {
-    const cleanUrl = new URL(pathname + nextUrl.search, nextUrl);
+    const cleanUrl = new URL(pathname + req.nextUrl.search, req.nextUrl);
     return NextResponse.redirect(cleanUrl, 308);
   }
 
@@ -40,7 +54,7 @@ export default auth((req) => {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     }
     return NextResponse.next();
   }
@@ -48,26 +62,26 @@ export default auth((req) => {
   if (!isLoggedIn && !isPublicRoute) {
     const callbackUrl = encodeURIComponent(pathname);
     return NextResponse.redirect(
-      new URL(`/login?callbackUrl=${callbackUrl}`, nextUrl)
+      new URL(`/login?callbackUrl=${callbackUrl}`, req.nextUrl)
     );
   }
 
-  if (isLoggedIn && session?.user?.role) {
+  if (isLoggedIn && token?.role) {
     if (pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     }
 
-    const permissions = session.user.permissions;
+    const permissions = getStaticPermissionsForRole(token.role);
 
-    if (!canAccessRoute(session.user.role, pathname, permissions)) {
+    if (!canAccessRoute(token.role, pathname, permissions)) {
       return NextResponse.redirect(
-        new URL("/dashboard?error=unauthorized", nextUrl)
+        new URL("/dashboard?error=unauthorized", req.nextUrl)
       );
     }
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [

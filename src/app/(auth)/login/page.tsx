@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail } from "lucide-react";
@@ -41,9 +41,9 @@ function LoginForm() {
         ? "Invalid email or password."
         : urlError === "session"
           ? "Your session is no longer valid. Please sign in again."
-      : urlError
-        ? "Your session expired. Please sign in again."
-        : null
+          : urlError
+            ? "Your session expired. Please sign in again."
+            : null
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,11 +60,38 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
-        callbackUrl,
+        redirect: false,
       });
+
+      if (result?.error) {
+        setIsLoading(false);
+        setError(
+          result.error === "CredentialsSignin"
+            ? "Invalid email or password"
+            : "Login failed. Please try again."
+        );
+        return;
+      }
+
+      if (!result?.ok) {
+        setIsLoading(false);
+        setError("Login failed. Please try again.");
+        return;
+      }
+
+      const session = await getSession();
+      if (!session?.user?.role) {
+        setIsLoading(false);
+        setError(
+          "Login succeeded but the session cookie was not saved. Remove AUTH_URL from Vercel env vars if set, then redeploy."
+        );
+        return;
+      }
+
+      window.location.assign(callbackUrl);
     } catch {
       setIsLoading(false);
       setError("Login failed. Please try again.");

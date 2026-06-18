@@ -2,10 +2,6 @@ import type { NextAuthConfig } from "next-auth";
 import { UserRole } from "@prisma/client";
 import { getStaticPermissionsForRole } from "@/lib/permissions";
 
-const useSecureCookies =
-  process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
-const cookiePrefix = useSecureCookies ? "__Secure-" : "";
-
 export const authConfig = {
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   trustHost: true,
@@ -14,19 +10,13 @@ export const authConfig = {
     signIn: "/login",
     error: "/login",
   },
-  cookies: {
-    sessionToken: {
-      name: `${cookiePrefix}authjs.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
-  },
   providers: [],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return `${baseUrl}/dashboard`;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id!;

@@ -7,6 +7,7 @@ import { getDatabaseUrl } from "@/lib/database-url";
 export async function GET() {
   const hasAuthSecret = Boolean(getAuthSecret());
   const hasDatabaseUrl = Boolean(getDatabaseUrl());
+  const authUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? null;
 
   let databaseOk = false;
   let databaseError: string | null = null;
@@ -27,6 +28,11 @@ export async function GET() {
   return NextResponse.json({
     ok: hasAuthSecret && databaseOk,
     environment: process.env.VERCEL_ENV ?? "local",
+    vercelUrl: process.env.VERCEL_URL ?? null,
+    authUrlConfigured: Boolean(authUrl),
+    authUrlWarning: authUrl
+      ? "Remove AUTH_URL/NEXTAUTH_URL on Vercel unless you use a custom domain that matches the URL you browse."
+      : null,
     hasAuthSecret,
     hasDatabaseUrl,
     databaseOk,

@@ -391,7 +391,9 @@ export function hasPermission(
   }
 
   const list =
-    permissions ?? DEFAULT_ROLE_PERMISSIONS[role] ?? [];
+    permissions && permissions.length > 0
+      ? permissions
+      : (DEFAULT_ROLE_PERMISSIONS[role] ?? []);
   return list.includes(permission);
 }
 

@@ -1,9 +1,10 @@
 import type { NextAuthConfig } from "next-auth";
 import { UserRole } from "@prisma/client";
+import { getAuthSecret } from "@/lib/auth-secret";
 import { getStaticPermissionsForRole } from "@/lib/permissions";
 
 export const authConfig = {
-  secret: process.env.AUTH_SECRET,
+  secret: getAuthSecret(),
   trustHost: true,
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   pages: {
@@ -20,7 +21,10 @@ export const authConfig = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.permissions = getStaticPermissionsForRole(user.role);
-      } else if (!token.permissions && token.role) {
+      } else if (
+        (!Array.isArray(token.permissions) || token.permissions.length === 0) &&
+        token.role
+      ) {
         token.permissions = getStaticPermissionsForRole(
           token.role as UserRole
         );

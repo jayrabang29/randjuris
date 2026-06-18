@@ -2,13 +2,19 @@ import { auth } from "@/lib/auth.edge";
 import { canAccessRoute } from "@/lib/permissions";
 import { normalizePathname } from "@/lib/url";
 import { NextResponse } from "next/server";
+import type { Session } from "next-auth";
 
 const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 const authRoutes = ["/login", "/forgot-password", "/reset-password"];
 
+function hasUsableSession(session: Session | null): boolean {
+  return Boolean(session?.user?.email && session?.user?.role);
+}
+
 export default auth((req) => {
   const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+  const session = req.auth;
+  const isLoggedIn = hasUsableSession(session);
   const rawPathname = nextUrl.pathname;
   const pathname = normalizePathname(rawPathname);
 
@@ -42,16 +48,16 @@ export default auth((req) => {
     );
   }
 
-  if (isLoggedIn && req.auth?.user?.role) {
+  if (isLoggedIn && session?.user?.role) {
     if (pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
 
-    const permissions = req.auth.user.permissions;
+    const permissions = session.user.permissions;
 
-    if (!canAccessRoute(req.auth.user.role, pathname, permissions)) {
+    if (!canAccessRoute(session.user.role, pathname, permissions)) {
       return NextResponse.redirect(
-        new URL("/dashboard?error=unauthorized", nextUrl)
+        new URL("/login?error=unauthorized", nextUrl)
       );
     }
   }

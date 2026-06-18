@@ -108,7 +108,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch {
           token.permissions = getStaticPermissionsForRole(user.role);
         }
-      } else if (!token.permissions && token.role) {
+      } else if (
+        (!Array.isArray(token.permissions) || token.permissions.length === 0) &&
+        token.role
+      ) {
         token.permissions = getStaticPermissionsForRole(
           token.role as UserRole
         );

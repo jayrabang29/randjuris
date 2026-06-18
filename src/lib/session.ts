@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { getPermissionsForRole } from "@/lib/permission-store";
 import prisma from "@/lib/prisma";
@@ -23,6 +23,7 @@ async function resolveSessionUser(sessionUser: NonNullable<Awaited<ReturnType<ty
   });
 
   if (!dbUser || !dbUser.isActive) {
+    await signOut({ redirectTo: "/login" });
     redirect("/login");
   }
 

@@ -40,20 +40,23 @@ export function normalizeCallbackUrl(url: string): string {
 }
 
 export function getBaseUrl(): string {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    return `https://${vercelUrl}`;
   }
 
-  const raw =
-    process.env.AUTH_URL ||
-    process.env.NEXTAUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
+  const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL;
+  if (authUrl && !authUrl.includes("localhost")) {
+    return authUrl
+      .replace(/\/index\.php\/?$/i, "")
+      .replace(/\/index\.php\//gi, "/")
+      .replace(/\/+$/, "");
+  }
 
-  return raw
-    .replace(/\/index\.php\/?$/i, "")
-    .replace(/\/index\.php\//gi, "/")
-    .replace(/\/+$/, "");
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ??
+    "http://localhost:3000"
+  );
 }
 
 export function buildAppUrl(path: string): string {

@@ -3,11 +3,10 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail } from "lucide-react";
-import { login } from "@/actions/auth";
 import { normalizeCallbackUrl } from "@/lib/url";
 import { loginSchema, type LoginInput } from "@/validators";
 import { BackdropLoader } from "@/components/shared/backdrop-loader";
@@ -56,33 +55,33 @@ function LoginForm() {
     setError(null);
     setIsLoading(true);
 
-    const loginTimeoutMs = 30_000;
-
     try {
-      const result = await Promise.race([
-        login(data, callbackUrl),
-        new Promise<{ success: false; error: string }>((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                success: false,
-                error:
-                  "Login timed out. The server may be unable to reach the database.",
-              }),
-            loginTimeoutMs
-          )
-        ),
-      ]);
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-      setIsLoading(false);
-      setError(result.error ?? "Login failed");
-    } catch (error) {
-      if (isRedirectError(error)) {
-        throw error;
+      if (result?.error) {
+        setIsLoading(false);
+        setError(
+          result.error === "CredentialsSignin"
+            ? "Invalid email or password"
+            : "Login failed. Please try again."
+        );
+        return;
+      }
+
+      if (result?.ok) {
+        window.location.assign(callbackUrl);
+        return;
       }
 
       setIsLoading(false);
-      setError("Login failed");
+      setError("Login failed. Please try again.");
+    } catch {
+      setIsLoading(false);
+      setError("Login failed. Please try again.");
     }
   }
 
@@ -163,15 +162,6 @@ function LoginForm() {
           Protected by enterprise-grade security and role-based access
         </p>
       </form>
-
-      {/* <div className="mt-8 rounded-xl border border-dashed border-border/60 bg-muted/30 p-4">
-        <p className="text-xs font-medium text-muted-foreground">Demo account</p>
-        <p className="mt-1 text-sm">
-          <span className="font-medium">admin@randtek.com</span>
-          <span className="text-muted-foreground"> · Password: </span>
-          <span className="font-mono text-xs">Password123!</span>
-        </p>
-      </div> */}
     </div>
   );
 }

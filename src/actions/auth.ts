@@ -3,12 +3,10 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { signIn, signOut } from "@/lib/auth";
 import { logActivity } from "@/lib/activity";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
-import { normalizeCallbackUrl } from "@/lib/url";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -17,29 +15,20 @@ import {
 } from "@/validators";
 import type { ActionResult } from "@/types";
 
-export async function login(
-  data: LoginInput,
-  callbackUrl?: string
-): Promise<ActionResult> {
+export async function login(data: LoginInput): Promise<ActionResult> {
   const parsed = loginSchema.safeParse(data);
   if (!parsed.success) {
     return { success: false, error: parsed.error.errors[0].message };
   }
 
-  const redirectTo = normalizeCallbackUrl(callbackUrl ?? "/dashboard");
-
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo,
+      redirect: false,
     });
     return { success: true };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
     if (error instanceof AuthError) {
       return { success: false, error: "Invalid email or password" };
     }

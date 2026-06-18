@@ -1,20 +1,16 @@
 import { getToken } from "next-auth/jwt";
-import { UserRole } from "@prisma/client";
-import { canAccessRoute, getStaticPermissionsForRole } from "@/lib/permissions";
 import { normalizePathname } from "@/lib/url";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Bundle secrets for Vercel Edge.
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-void authSecret;
 
 const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 const authRoutes = ["/login", "/forgot-password", "/reset-password"];
 
 type AuthToken = {
   email?: string;
-  role?: UserRole;
+  role?: string;
 };
 
 function resolveSecureCookie(req: NextRequest): boolean {
@@ -24,13 +20,23 @@ function resolveSecureCookie(req: NextRequest): boolean {
 }
 
 export async function middleware(req: NextRequest) {
-  const secureCookie = resolveSecureCookie(req);
+  if (!authSecret) {
+    console.error("MIDDLEWARE: AUTH_SECRET is not configured");
+    return NextResponse.next();
+  }
 
-  const token = (await getToken({
-    req,
-    secret: authSecret,
-    secureCookie,
-  })) as AuthToken | null;
+  let token: AuthToken | null = null;
+
+  try {
+    token = (await getToken({
+      req,
+      secret: authSecret,
+      secureCookie: resolveSecureCookie(req),
+    })) as AuthToken | null;
+  } catch (error) {
+    console.error("MIDDLEWARE: failed to read session token", error);
+    return NextResponse.next();
+  }
 
   const isLoggedIn = Boolean(token?.email && token?.role);
   const rawPathname = req.nextUrl.pathname;
@@ -66,18 +72,8 @@ export async function middleware(req: NextRequest) {
     );
   }
 
-  if (isLoggedIn && token?.role) {
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
-    }
-
-    const permissions = getStaticPermissionsForRole(token.role);
-
-    if (!canAccessRoute(token.role, pathname, permissions)) {
-      return NextResponse.redirect(
-        new URL("/dashboard?error=unauthorized", req.nextUrl)
-      );
-    }
+  if (isLoggedIn && pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 
   return NextResponse.next();

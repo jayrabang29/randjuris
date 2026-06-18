@@ -150,14 +150,14 @@ function LoginForm() {
         </p>
       </form>
 
-      <div className="mt-8 rounded-xl border border-dashed border-border/60 bg-muted/30 p-4">
+      {/* <div className="mt-8 rounded-xl border border-dashed border-border/60 bg-muted/30 p-4">
         <p className="text-xs font-medium text-muted-foreground">Demo account</p>
         <p className="mt-1 text-sm">
           <span className="font-medium">admin@randtek.com</span>
           <span className="text-muted-foreground"> · Password: </span>
           <span className="font-mono text-xs">Password123!</span>
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

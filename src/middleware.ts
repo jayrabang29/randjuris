@@ -4,6 +4,10 @@ import { normalizePathname } from "@/lib/url";
 import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 
+// Keep env vars in the middleware bundle (required on Vercel Edge).
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+void authSecret;
+
 const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 const authRoutes = ["/login", "/forgot-password", "/reset-password"];
 
